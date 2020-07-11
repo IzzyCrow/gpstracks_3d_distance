@@ -1,3 +1,5 @@
+# i want to try to mannually record the distance 
+
 import csv
 import geopy
 import os
@@ -14,8 +16,15 @@ def loadCSV2List (textFile):
 
     return csvList
 
-gpsList = loadCSV2List('diablo.csv')
+def generateCommaindxes(record):
+    for elem in record:
+        print(elem)
+
+
+
+gpsList = loadCSV2List('testdata.csv')
 for record in gpsList:
-    print(record)
+    # print(record)
+    
 
 
