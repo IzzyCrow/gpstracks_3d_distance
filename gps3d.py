@@ -8,8 +8,9 @@ import decimal
 import geopy
 import os
 import sys
+
 from bs4 import BeautifulSoup
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 
 def loadCSV2List (textFile):
@@ -35,20 +36,30 @@ def generateCommaindxes(record):
 
 def parseGPXLine(record):
     # <bound method Tag.get_text of <trkpt lat="37.8150756843" lon="-122.2536893003"><ele>27.15</ele><time>2020-07-11T18:49:59Z</time><extensions><gpxtpx:TrackPointExtension><gpxtpx:atemp>23.6</gpxtpx:atemp></gpxtpx:TrackPointExtension></extensions></trkpt>>
+    # <trkpt lat="37.8150304221" lon="-122.2539115045"><ele>28.96</ele><time>2020-07-11T23:39:41Z</time></trkpt>
     trackPoint = []
     latitude = Decimal(record[42:55])
     longitude = Decimal(record[62:77])
-    elevation = Decimal(record[85:89])
+    elevation = Decimal(record[84:89])
     utcDate =  record[101:111]
     utcTime = record [112:120]
-    temp = (Decimal((record[182:186])) * Decimal(9.0/5.0)) + Decimal(32.0) 
+    utc = createUTCTimeObject(utcTime,utcDate)
+    if len(record) == 252:
+        temp = (Decimal((record[182:186])) * Decimal(9.0/5.0)) + 32 
+    else:
+        temp = None
+    
+    # temp = record[182:186]
+    
     # temp1 = Decimal(9.0/5.0)
 
     # temperature = (temp * temp1) + 32
     # * (9/5)) + 32.0 
     # temp = record[84:88]
+# print today.strftime('We are the %d, %b %Y')
+    # print('Lat: ' + str(latitude) + ' | Longitude = ' + str(longitude) + ' | Elevation = ' + str(elevation) + ' | Date = ' + utcDate + ' | Time = ' + utcTime + ' | Temperature = ' + str(temp))
+    print('Lat: ' + str(latitude) + ' | Longitude = ' + str(longitude) + ' | Elevation = ' + str(elevation) + ' | Date = ' + utc.strftime ('%d-%b-%Y %H:%M:%S') + '| Temperature = ' + str(temp))
 
-    print('Lat: ' + str(latitude) + ' | Longitude = ' + str(longitude) + ' | Elevation = ' + str(elevation) + ' | Date = ' + utcDate + ' | Time = ' + utcTime + ' | Temperature = ' + str(temp))
 
 
 def readGPX(targetGPX):
@@ -60,11 +71,23 @@ def readGPX(targetGPX):
     elevation = soup.find_all('ele')
     temp = soup.find_all('gpxtpx:atemp')
     for i in range(0, len(trackPoints)):
+        # print (str(trackPoints[i].get_text) + ' | ' + str(len(str(trackPoints[i].get_text))))
         parseGPXLine(str(trackPoints[i].get_text))
         # print (time[i].get_text)
         # print (elevation[i].get_text)
         # print (temp[i].get_text)
 
+def createUTCTimeObject(xTime,xDate):
+    year = int(xDate[0:4])
+    month = int(xDate[5:7])
+    day = int(xDate[8:])
+    hour = int(xTime[0:2])
+    minute = int(xTime[3:5])
+    second = int(xTime[6:])
+
+    return datetime(year, month, day, hour, day, second, 0, tzinfo=timezone.utc)
+
+    # print(year + ' ' + month + ' ' + day + ' | ' + hour + ':' + minute + ':' + second)
 
     # infile = open("books.xml","r")
     # contents = infile.read()
@@ -96,12 +119,11 @@ def readGPX(targetGPX):
 #     altitude = Decimal(record[commaLocations[3] + 1:commaLocations[4]])
     
 
-readGPX('track_TEST.gpx')
+readGPX('Track_NEW.gpx')
 
 
 # my goal
 # take each line, get teh index of each comma then pass that data to a list where i can use the index numbers of commas i need ot read the csv
 # so record [indexlist(3):indexlist(6)] = lat
 
-date_time_str = '18/09/19 01:55:19'
-date_time_obj = datetime. strptime(date_time_str, '%d/%m/%y %H:%M:%S')
+
