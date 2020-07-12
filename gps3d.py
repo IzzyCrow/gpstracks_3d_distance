@@ -5,7 +5,7 @@
 
 import csv
 import decimal
-import geopy
+# import geopy
 import os
 import sys
 from bs4 import BeautifulSoup
@@ -24,6 +24,8 @@ class myTrackPoint:
         self.localtime = locald
         self.temperature = temp
         self.model = 'Garmin GPSMAP 64sx' 
+
+
 
 
 
@@ -50,14 +52,33 @@ def generateCommaindxes(record):
         counter += 1
 
 def parseGPXLine(record):
-    latitude = Decimal(record[42:55])
-    longitude = Decimal(record[62:77])
-    elevation = Decimal(record[84:89])
-    utcDate =  record[101:111]
-    utcTime = record [112:120]
+    
+    # Find the locations of the various xml elements   
+    indLatStart = record.find('lat="') + 5
+    indLongStart = record.find('lon="') + 5
+    indEleStart = record.find('<ele>') + 5
+    indTimeStart = record.find('<time>') + 6
+    indTimeEnd = record.find(r'</time>') -1
+    indLatEnd = indLongStart - 8
+    indLongEnd = indEleStart - 7
+    indEleEnd = indTimeStart - 12
+
+    latitude = Decimal(record[indLatStart:indLatEnd])
+    longitude = Decimal(record[indLongStart:indLongEnd])
+    elevation = Decimal(record[indEleStart:indEleEnd])
+    
+    # Further aggregate the date to separate time and date
+    dateString = record[indTimeStart:indTimeEnd]
+    tLocation = dateString.find('T')
+    utcDate = dateString[:tLocation]
+    utcTime = dateString[tLocation + 1:]
     utc = createUTCTimeObject(utcTime,utcDate)
-    if len(record) == 252:
-        temp = (Decimal((record[182:186])) * Decimal(9.0/5.0)) + 32 
+
+    #Check if there is a temperature recorded. IF so extract teh temperature.
+    if len(record) >  200:
+        indTempStart = record.find('atemp') + 6
+        indTempEnd = record.find(r'</gpxtpx')
+        temp = Decimal(record[indTempStart:indTempEnd])
     else:
         temp = None
     
@@ -77,6 +98,7 @@ def readGPX(targetGPX):
     temp = soup.find_all('gpxtpx:atemp')
     for i in range(0, len(trackPoints)):
         # print (str(trackPoints[i].get_text) + ' | ' + str(len(str(trackPoints[i].get_text))))
+        print(str(trackPoints[i].get_text))
         distinctTrackPoint = parseGPXLine(str(trackPoints[i].get_text))
         print('Model: ' + distinctTrackPoint.model)
         print('Latitude: ' + str(distinctTrackPoint.latitude))
@@ -122,7 +144,7 @@ def createUTCTimeObject(xTime,xDate):
 #     altitude = Decimal(record[commaLocations[3] + 1:commaLocations[4]])
     
 
-readGPX('Track_NEW.gpx')
+readGPX('Track_LAKEMERRIT.gpx')
 
 
 # my goal
