@@ -1,6 +1,6 @@
 # i want to try to manually record the total distance of a gps track from a gps 
 # taking into account elevation.  The datafile will be a text file genrated from
-# Minnesota dnrGarmin Progmram (version 6.1.0.6 ) -  https://www.dnr.state.mn.us/mis/gis/DNRGPS/DNRGPS.html
+# Minnesota dnrGarmin Program (version 6.1.0.6 ) -  https://www.dnr.state.mn.us/mis/gis/DNRGPS/DNRGPS.html
 
 
 import csv
@@ -89,15 +89,16 @@ def readGPX(targetGPX):
     for i in range(0, len(trackPoints)):
         # print (str(trackPoints[i].get_text) + ' | ' + str(len(str(trackPoints[i].get_text))))
         distinctTrackPoint = parseGPXLine(str(trackPoints[i].get_text))
-        # print(str(distinctTrackPoint.latitude))
-        # print(str(distinctTrackPoint.longtitude))
-        # print(str(distinctTrackPoint.elevation))
-        # print((distinctTrackPoint.gpstime).strftime ('%d-%b-%Y %H:%M:%S'))
-        # print(str(distinctTrackPoint.localtime.strftime ('%d-%b-%Y %H:%M:%S')))
-        # if distinctTrackPoint.temperature != None:
-        #     print(str(round(distinctTrackPoint.temperature,2)))
-        # else:
-        #     print ('N/A')
+        print('Latitude: ' + str(distinctTrackPoint.latitude))
+        print('Longitude: ' + str(distinctTrackPoint.longtitude))
+        print('Elevation: ' + str(distinctTrackPoint.elevation))
+        print('GPS Time: ' + distinctTrackPoint.gpstime.strftime ('%d-%b-%Y %H:%M:%S'))
+        print('Local Time: ' + distinctTrackPoint.localtime.strftime ('%d-%b-%Y %H:%M:%S'))
+        if distinctTrackPoint.temperature != None:
+            print('Temperature (f): ' + str(round(distinctTrackPoint.temperature,2)))
+        else:
+            print ('Temperature (f): N/A')
+        print('---------------------------------------')
         # f'{a:.2f}'
         # print (time[i].get_text)
         # print (elevation[i].get_text)
