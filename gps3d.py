@@ -8,10 +8,24 @@ import decimal
 import geopy
 import os
 import sys
-
 from bs4 import BeautifulSoup
 from datetime import datetime, timezone
+from dateutil import tz
 from decimal import Decimal
+
+class myTrackPoint:
+    def __init__(self,lat,ylong,ele,utcd,locald,temp):
+        # self.name = name
+        # self.age = age
+        self.longtitude = ylong
+        self.latitude = lat
+        self.elevation = ele
+        self.gpstime = utcd
+        self.localtime = locald
+        self.temperature = temp 
+
+
+
 
 def loadCSV2List (textFile):
     csvList = []
@@ -49,7 +63,8 @@ def parseGPXLine(record):
     else:
         temp = None
     
-    # temp = record[182:186]
+    x = myTrackPoint(latitude, longitude, elevation,utc,createLocalTimeObject(utc), temp)
+    return x
     
     # temp1 = Decimal(9.0/5.0)
 
@@ -58,7 +73,8 @@ def parseGPXLine(record):
     # temp = record[84:88]
 # print today.strftime('We are the %d, %b %Y')
     # print('Lat: ' + str(latitude) + ' | Longitude = ' + str(longitude) + ' | Elevation = ' + str(elevation) + ' | Date = ' + utcDate + ' | Time = ' + utcTime + ' | Temperature = ' + str(temp))
-    print('Lat: ' + str(latitude) + ' | Longitude = ' + str(longitude) + ' | Elevation = ' + str(elevation) + ' | Date = ' + utc.strftime ('%d-%b-%Y %H:%M:%S') + '| Temperature = ' + str(temp))
+    print('Lat: ' + str(latitude) + ' | Longitude = ' + str(longitude) + ' | Elevation = ' + str(elevation) + ' | Date = ' + utc.strftime ('%d-%b-%Y %H:%M:%S') + ' | ' + createLocalTimeObject(utc).strftime ('%d-%b-%Y %H:%M:%S') + '| Temperature = ' + str(temp))
+
 
 
 
@@ -72,10 +88,38 @@ def readGPX(targetGPX):
     temp = soup.find_all('gpxtpx:atemp')
     for i in range(0, len(trackPoints)):
         # print (str(trackPoints[i].get_text) + ' | ' + str(len(str(trackPoints[i].get_text))))
-        parseGPXLine(str(trackPoints[i].get_text))
+        distinctTrackPoint = parseGPXLine(str(trackPoints[i].get_text))
+        # print(str(distinctTrackPoint.latitude))
+        # print(str(distinctTrackPoint.longtitude))
+        # print(str(distinctTrackPoint.elevation))
+        # print((distinctTrackPoint.gpstime).strftime ('%d-%b-%Y %H:%M:%S'))
+        # print(str(distinctTrackPoint.localtime.strftime ('%d-%b-%Y %H:%M:%S')))
+        # if distinctTrackPoint.temperature != None:
+        #     print(str(round(distinctTrackPoint.temperature,2)))
+        # else:
+        #     print ('N/A')
+        # f'{a:.2f}'
         # print (time[i].get_text)
         # print (elevation[i].get_text)
         # print (temp[i].get_text)
+
+
+# # METHOD 2: Auto-detect zones:
+# from_zone = tz.tzutc()
+# to_zone = tz.tzlocal()
+
+# # utc = datetime.utcnow()
+# utc = datetime.strptime('2011-01-21 02:37:21', '%Y-%m-%d %H:%M:%S')
+
+# # Tell the datetime object that it's in UTC time zone since 
+# # datetime objects are 'naive' by default
+# utc = utc.replace(tzinfo=from_zone)
+
+# # Convert time zone
+# central = utc.astimezone(to_zone)
+
+def createLocalTimeObject(utcDate):
+    return utcDate.astimezone(tz.gettz())
 
 def createUTCTimeObject(xTime,xDate):
     year = int(xDate[0:4])
@@ -85,7 +129,7 @@ def createUTCTimeObject(xTime,xDate):
     minute = int(xTime[3:5])
     second = int(xTime[6:])
 
-    return datetime(year, month, day, hour, day, second, 0, tzinfo=timezone.utc)
+    return datetime(year, month, day, hour, minute, second, 0, tzinfo=timezone.utc)
 
     # print(year + ' ' + month + ' ' + day + ' | ' + hour + ':' + minute + ':' + second)
 
